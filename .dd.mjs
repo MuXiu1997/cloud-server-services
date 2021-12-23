@@ -6,7 +6,7 @@ const backupDir = path.join(home, 'backup')
 
 const services = fs
   .readdirSync(servicesDir)
-  .filter((d) => !d.startsWith('.') && d !== 'LICENSE')
+  .filter((d) => !d.startsWith('.') && !['LICENSE', 'README.md'].includes(d))
 
 const service = await question(
   `Choose service: \n${chalk.blueBright.bold(services.join('    '))}\n`,
