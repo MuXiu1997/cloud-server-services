@@ -1,0 +1,61 @@
+version: '3.9'
+
+networks:
+  proxy:
+    external: true
+
+configs:
+  traefik_config:
+    file: traefik.yml
+  timezone:
+    external: true
+  localtime:
+    external: true
+
+secrets:
+  TRAEFIL_ALICLOUD_ACCESS_KEY:
+    external: true
+  TRAEFIL_ALICLOUD_SECRET_KEY:
+    external: true
+  TRAEFIL_ALICLOUD_REGION_ID:
+    external: true
+
+volumes:
+  acme: { }
+
+services:
+  traefik:
+    image: traefik:v2.5.6
+    networks:
+      - proxy
+    ports:
+      - '80:80'
+      - '443:443'
+    configs:
+      - source: traefik_config
+        target: /etc/traefik/traefik.yml
+      - source: timezone
+        target: /etc/timezone
+      - source: localtime
+        target: /etc/localtime
+    secrets:
+      - TRAEFIL_ALICLOUD_ACCESS_KEY
+      - TRAEFIL_ALICLOUD_SECRET_KEY
+      - TRAEFIL_ALICLOUD_REGION_ID
+    environment:
+      ALICLOUD_ACCESS_KEY_FILE: /run/secrets/TRAEFIL_ALICLOUD_ACCESS_KEY
+      ALICLOUD_SECRET_KEY_FILE: /run/secrets/TRAEFIL_ALICLOUD_SECRET_KEY
+      ALICLOUD_REGION_ID_FILE: /run/secrets/TRAEFIL_ALICLOUD_REGION_ID
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - acme:/etc/acme
+    deploy:
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.traefik.entrypoints=web, websecure
+        - traefik.http.routers.traefik.rule=Host(`proxy.muxiu1997.com`)
+        - traefik.http.services.traefik.loadbalancer.server.port=8080
+      placement:
+        constraints:
+          - node.role == manager
