@@ -12,4 +12,4 @@ const script = keys.map(k => {
   echo '${process.env[k]}' | docker secret create ${secretKey} -`
 }).join('\n')
 
-await $`ssh -o StrictHostKeyChecking=no ${sshUsername}@${sshHost} ${script}`
+await nothrow($`ssh -o StrictHostKeyChecking=no ${sshUsername}@${sshHost} ${script}`)
