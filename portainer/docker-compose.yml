@@ -1,0 +1,59 @@
+version: '3.9'
+
+networks:
+  proxy:
+    external: true
+  portainer: { }
+
+configs:
+  timezone:
+    external: true
+  localtime:
+    external: true
+
+volumes:
+  data: { }
+
+services:
+  portainer:
+    image: portainer/portainer-ce:alpine
+    networks:
+      - proxy
+      - portainer
+    configs:
+      - source: timezone
+        target: /etc/timezone
+      - source: localtime
+        target: /etc/localtime
+    volumes:
+      - data:/data
+    deploy:
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.portainer.entrypoints=web, websecure
+        - traefik.http.routers.portainer.rule=Host(`portainer.muxiu1997.com`)
+        - traefik.http.services.portainer.loadbalancer.server.port=9000
+
+  portainer_agent:
+    image: portainer/agent:alpine
+    networks:
+      - portainer
+    configs:
+      - source: timezone
+        target: /etc/timezone
+      - source: localtime
+        target: /etc/localtime
+    environment:
+      AGENT_CLUSTER_ADDR: tasks.portainer_agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+          - node.platform.os == linux
+
+
