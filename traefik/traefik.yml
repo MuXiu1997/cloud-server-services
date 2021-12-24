@@ -34,4 +34,4 @@ certificatesResolvers:
       email: muxiu1997@gmail.com
       storage: /etc/acme/acme.json
 
-accessLog: { }
+accessLog: {}

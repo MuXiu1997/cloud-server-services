@@ -19,7 +19,7 @@ secrets:
     external: true
 
 volumes:
-  data: { }
+  data: {}
 
 services:
   bitwarden:
