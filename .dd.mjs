@@ -15,6 +15,11 @@ const service = await question(
   }
 )
 
+if (!services.includes(service)) {
+  console.log(chalk.red('no such service exists'))
+  process.exit(1)
+}
+
 const commands = ['up', 'down', 'backup', 'restore']
 const command = await question(
   `Choose command: \n${chalk.blueBright.bold(commands.join('    '))}\n`,
@@ -23,10 +28,6 @@ const command = await question(
   }
 )
 
-if (!services.includes(service)) {
-  console.log(chalk.red('no such service exists'))
-  process.exit(1)
-}
 if (!commands.includes(command)) {
   console.log(chalk.red('unsupported commands'))
   process.exit(1)
