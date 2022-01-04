@@ -1,4 +1,4 @@
-# My Server's Services
+# ☁️ My Server's Services
 
 
 
@@ -6,3 +6,4 @@
 - [`Bitwarden`](https://github.com/dani-garcia/vaultwarden)
 - [`Portainer`](https://docs.portainer.io/v/ce-2.11/)
 - [`Nps`](https://ehang-io.github.io/nps/#/?id=nps)
+- [`Sftpgo`](https://github.com/drakkan/sftpgo)
