@@ -64,7 +64,11 @@ async function backup() {
   switch (service) {
     case 'bitwarden':
     case 'nps':
-      await $`docker run --rm -v ${service}_data:/data -v ${backupDir}:/backup busybox sh -c 'cd /data && tar cvf /backup/${service}-backup.tar *'`
+      await backupVolume(service, 'data')
+      break
+    case 'sftpgo':
+      await backupVolume(service, 'data')
+      await backupVolume(service, 'config')
       break
     default:
       notImplemented()
@@ -75,11 +79,23 @@ async function restore() {
   switch (service) {
     case 'bitwarden':
     case 'nps':
-      await $`docker run --rm -v ${service}_data:/data -v ${backupDir}:/backup busybox sh -c 'tar xvf /backup/${service}-backup.tar -C /data'`
+      await restoreVolume(service, 'data')
+      break
+    case 'sftpgo':
+      await restoreVolume(service, 'data')
+      await restoreVolume(service, 'config')
       break
     default:
       notImplemented()
   }
+}
+
+async function backupVolume(service, volume) {
+  await $`docker run --rm -v ${service}_${volume}:/data -v ${backupDir}:/backup busybox sh -c 'cd /data && tar cvf /backup/${service}-${volume}-backup.tar *'`
+}
+
+async function restoreVolume(service, volume) {
+  await $`docker run --rm -v ${service}_${volume}:/data -v ${backupDir}:/backup busybox sh -c 'tar xvf /backup/${service}-${volume}-backup.tar -C /data'`
 }
 
 function notImplemented() {
