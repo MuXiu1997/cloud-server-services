@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backup-bitwarden
+  namespace: muxiu1997-dot-com
+spec:
+  ttlSecondsAfterFinished: 0
+  template:
+    spec:
+      containers:
+        - name: backup-bitwarden
+          image: busybox:latest
+          command: [ "sh", "-c", "cd /data && tar cvf /backup/bitwarden-data-backup.tar *" ]
+          volumeMounts:
+            - name: bitwarden-data
+              mountPath: /data
+            - name: backup
+              mountPath: /backup
+      volumes:
+        - name: bitwarden-data
+          persistentVolumeClaim:
+            claimName: bitwarden-data
+        - name: backup
+          hostPath:
+            path: /mnt/backup
+      restartPolicy: Never
+
