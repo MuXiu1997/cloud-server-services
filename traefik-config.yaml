@@ -1,0 +1,40 @@
+# /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ports:
+      web:
+        port: 80
+        redirectTo: websecure
+      websecure:
+        port: 443
+        tls:
+          enabled: true
+          certResolver: ali
+          domains:
+            - main: muxiu1997.com
+              sans:
+                - "*.muxiu1997.com"
+    additionalArguments:
+      - "--certificatesresolvers.ali.acme.email=muxiu1997@gmail.com"
+      - "--certificatesresolvers.ali.acme.storage=/data/acme.json"
+      - "--certificatesresolvers.ali.acme.dnschallenge.provider=alidns"
+    env:
+      - name: ALICLOUD_ACCESS_KEY
+        value: ::TODO::
+      - name: ALICLOUD_SECRET_KEY
+        value: ::TODO::
+      - name: ALICLOUD_REGION_ID
+        value: cn-beijing
+      - name: TZ
+        value: Asia/Shanghai
+    persistence:
+      enabled: true
+      storageClass: local-path  
+    logs:
+      general:
+        level: DEBUG
