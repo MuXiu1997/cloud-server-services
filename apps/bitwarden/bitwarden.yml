@@ -4,7 +4,7 @@ metadata:
   name: bitwarden-data
   namespace: muxiu1997-dot-com
   labels:
-    type: pvc
+    kind: pvc
 spec:
   accessModes:
     - ReadWriteOnce
@@ -18,6 +18,8 @@ kind: IngressRoute
 metadata:
   name: bitwarden
   namespace: muxiu1997-dot-com
+  labels:
+      kind: ing
 spec:
   routes:
     - kind: Rule
@@ -31,6 +33,8 @@ kind: Service
 metadata:
   name: bitwarden
   namespace: muxiu1997-dot-com
+  labels:
+      kind: svc
 spec:
   ports:
     - port: 80
@@ -43,6 +47,8 @@ kind: Deployment
 metadata:
   name: bitwarden
   namespace: muxiu1997-dot-com
+  labels:
+      kind: deploy
 spec:
   replicas: 1
   selector:
