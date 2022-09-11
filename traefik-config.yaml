@@ -7,22 +7,20 @@ metadata:
 spec:
   valuesContent: |-
     ports:
-      web:
-        port: 80
-        redirectTo: websecure
       websecure:
-        port: 443
         tls:
           enabled: true
           certResolver: ali
           domains:
             - main: muxiu1997.com
               sans:
-                - "*.muxiu1997.com"
+                - '*.muxiu1997.com'
+      web:
+        redirectTo: websecure
     additionalArguments:
-      - "--certificatesresolvers.ali.acme.email=muxiu1997@gmail.com"
-      - "--certificatesresolvers.ali.acme.storage=/data/acme.json"
-      - "--certificatesresolvers.ali.acme.dnschallenge.provider=alidns"
+      - --certificatesresolvers.ali.acme.email=muxiu1997@gmail.com
+      - --certificatesresolvers.ali.acme.storage=/data/acme.json
+      - --certificatesresolvers.ali.acme.dnschallenge.provider=alidns
     env:
       - name: ALICLOUD_ACCESS_KEY
         value: ::TODO::
@@ -34,7 +32,8 @@ spec:
         value: Asia/Shanghai
     persistence:
       enabled: true
-      storageClass: local-path  
+      storageClass: local-path
     logs:
       general:
         level: DEBUG
+        
