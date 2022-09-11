@@ -21,11 +21,15 @@ metadata:
   labels:
       kind: ing
 spec:
+  entryPoints:
+    - web
+    - websecure
   routes:
     - kind: Rule
       match: Host(`bw.muxiu1997.com`)
       services:
-        - name: bitwarden
+        - kind: Service
+          name: bitwarden
           port: 80
 ---
 apiVersion: v1
@@ -36,7 +40,6 @@ metadata:
   labels:
       kind: svc
 spec:
-  type: LoadBalancer
   ports:
     - port: 80
       targetPort: 80
