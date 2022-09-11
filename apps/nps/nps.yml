@@ -1,0 +1,159 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nps-data
+  namespace: muxiu1997-dot-com
+  labels:
+    kind: pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nps
+  namespace: muxiu1997-dot-com
+  labels:
+    kind: ing
+spec:
+  routes:
+    - kind: Rule
+      match: Host(`nps.muxiu1997.com`)
+      services:
+        - name: nps
+          port: 8080
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: nps-bridge
+  namespace: muxiu1997-dot-com
+  labels:
+    kind: ing
+spec:
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: nps-bridge
+          port: 8024
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nps
+  namespace: muxiu1997-dot-com
+  labels:
+    kind: svc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: nps
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nps-bridge
+  namespace: muxiu1997-dot-com
+  labels:
+    kind: svc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8024
+      targetPort: 8024
+      protocol: TCP
+  selector:
+    app: nps
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nps
+  namespace: muxiu1997-dot-com
+  labels:
+    kind: deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nps
+  template:
+    metadata:
+      labels:
+        app: nps
+    spec:
+      initContainers:
+        - name: generate-config-file
+          image: busybox
+          env:
+            - name: NPS_PUBLIC_VKEY
+              valueFrom:
+                secretKeyRef:
+                  name: muxiu1997.com
+                  key: NPS_PUBLIC_VKEY
+            - name: NPS_WEB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: muxiu1997.com
+                  key: NPS_WEB_USERNAME
+            - name: NPS_WEB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: muxiu1997.com
+                  key: NPS_WEB_PASSWORD
+          command:
+            - sh
+            - -c
+            - >
+              cat /conf-template/nps.conf
+              | sed "s/{{ NPS_PUBLIC_VKEY }}/${NPS_PUBLIC_VKEY}/g"
+              | sed "s/{{ NPS_WEB_USERNAME }}/${NPS_WEB_USERNAME}/g"
+              | sed "s/{{ NPS_WEB_PASSWORD }}/${NPS_WEB_PASSWORD}/g"
+              > /conf/nps.conf
+          volumeMounts:
+            - name: nps-data
+              mountPath: /conf
+            - name: nps-config
+              mountPath: /conf-template
+        - name: ensure-files
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              for file in /conf/clients.json /conf/hosts.json /conf/tasks.json; do
+                if [ ! -f "$file" ]; then
+                  touch "$file"
+                fi
+              done
+          volumeMounts:
+            - name: nps-data
+              mountPath: /conf
+      containers:
+        - name: nps
+          image: ffdfgdfg/nps:v0.26.10
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+          volumeMounts:
+            - name: nps-data
+              mountPath: /conf
+      volumes:
+        - name: nps-data
+          persistentVolumeClaim:
+            claimName: nps-data
+        - name: nps-config
+          configMap:
+            name: nps-config
