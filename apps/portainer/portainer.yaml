@@ -17,7 +17,8 @@ spec:
     - kind: Rule
       match: Host(`portainer.muxiu1997.com`)
       services:
-        - name: portainer
+        - kind: Service
+          name: portainer
           port: 9000
 ---
 # Source: portainer/templates/serviceaccount.yaml
@@ -83,7 +84,6 @@ metadata:
     app.kubernetes.io/instance: portainer
     app.kubernetes.io/version: "ce-latest-ee-2.15.0"
 spec:
-  type: LoadBalancer
   ports:
     - port: 9000
       targetPort: 9000
