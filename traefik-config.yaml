@@ -23,9 +23,15 @@ spec:
       - --certificatesresolvers.ali.acme.dnschallenge.provider=alidns
     env:
       - name: ALICLOUD_ACCESS_KEY
-        value: ::TODO::
+        valueFrom:
+          secretKeyRef:
+            name: traefik-secret
+            key: ALICLOUD_ACCESS_KEY
       - name: ALICLOUD_SECRET_KEY
-        value: ::TODO::
+        valueFrom:
+          secretKeyRef:
+            name: traefik-secret
+            key: ALICLOUD_SECRET_KEY
       - name: ALICLOUD_REGION_ID
         value: cn-beijing
       - name: TZ
@@ -36,4 +42,3 @@ spec:
     logs:
       general:
         level: DEBUG
-        
