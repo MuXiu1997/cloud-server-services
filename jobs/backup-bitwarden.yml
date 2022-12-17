@@ -10,7 +10,7 @@ spec:
       containers:
         - name: backup-bitwarden
           image: busybox:latest
-          command: [ "sh", "-c", "cd /data && tar cvf /backup/bitwarden-data-backup.tar *" ]
+          command: [ "sh", "-c", "cd /data && tar cvf /backup/bitwarden-data-backup.tar * && chown 1000:1000 /backup/bitwarden-data-backup.tar" ]
           volumeMounts:
             - name: bitwarden-data
               mountPath: /data
