@@ -1,0 +1,75 @@
+# /var/lib/rancher/k3s/server/manifests/traefik-github-oauth-server.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-github-oauth-server
+  namespace: kube-system
+  labels:
+    kind: ing
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`oauth.muxiu1997.com`)
+      services:
+        - kind: Service
+          name: traefik-github-oauth-server
+          port: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-github-oauth-server
+  namespace: kube-system
+  labels:
+    kind: svc
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: traefik-github-oauth-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik-github-oauth-server
+  namespace: kube-system
+  labels:
+    kind: deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik-github-oauth-server
+  template:
+    metadata:
+      labels:
+        app: traefik-github-oauth-server
+    spec:
+      containers:
+        - name: traefik-github-oauth-server
+          image: muxiu1997/traefik-github-oauth-server:v0.2.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_BASE_URL
+              value: https://oauth.muxiu1997.com
+            - name: GITHUB_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: traefik-secret
+                  key: GITHUB_OAUTH_CLIENT_ID
+            - name: GITHUB_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: traefik-secret
+                  key: GITHUB_OAUTH_CLIENT_SECRET
+            - name: DEBUG_MODE
+              value: "true"
+            - name: TZ
+              value: Asia/Shanghai

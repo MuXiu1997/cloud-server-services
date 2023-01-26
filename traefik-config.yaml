@@ -6,7 +6,13 @@ metadata:
   namespace: kube-system
 spec:
   valuesContent: |-
+    image:
+      name: traefik
+      tag: v2.9.6
+      pullPolicy: IfNotPresent
     hostNetwork: true
+    deployment:
+      dnsPolicy: ClusterFirstWithHostNet
     ports:
       websecure:
         tls:
@@ -22,6 +28,8 @@ spec:
       - --certificatesresolvers.ali.acme.email=muxiu1997@gmail.com
       - --certificatesresolvers.ali.acme.storage=/data/acme.json
       - --certificatesresolvers.ali.acme.dnschallenge.provider=alidns
+      - --experimental.plugins.github-oauth.modulename=github.com/MuXiu1997/traefik-github-oauth-plugin
+      - --experimental.plugins.github-oauth.version=v0.2.1
     env:
       - name: ALICLOUD_ACCESS_KEY
         valueFrom:
@@ -43,3 +51,42 @@ spec:
     logs:
       general:
         level: DEBUG
+    experimental:
+      plugins:
+        enabled: true
+    ingressRoute:
+      dashboard:
+        enabled: false
+        
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: traefik-dashboard-github-oauth
+  namespace: kube-system
+spec:
+  plugin:
+    github-oauth:
+      apiBaseUrl: http://traefik-github-oauth-server.kube-system
+      whitelist:
+        logins:
+          - MuXiu1997
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  namespace: kube-system
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`traefik.muxiu1997.com`)
+      services:
+        - kind: TraefikService
+          name: api@internal
+      middlewares:
+        - name: traefik-dashboard-github-oauth
