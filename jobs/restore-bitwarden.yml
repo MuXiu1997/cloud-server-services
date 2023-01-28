@@ -9,22 +9,27 @@ spec:
     spec:
       containers:
         - name: backup-bitwarden
-          image: busybox:latest
-          command: 
-            - sh
-            - -c
-            - tar xvf /backup/bitwarden-data-backup.tar -C /data
+          image: muxiu1997/backup-restore:latest
+          args:
+            - restore
+          env:
+            - name: RCLONE_CONFIG_CONTENT
+              valueFrom:
+                secretKeyRef:
+                  name: muxiu1997.com
+                  key: RCLONE_CONFIG_CONTENT
+            - name: BACKUP_NAME
+              value: bitwarden
+            - name: REMOTE_BACKUP_DIR
+              value: dropbox:/muxiu1997.com/backup/bitwarden
+            - name: TZ
+              value: Asia/Shanghai
           volumeMounts:
             - name: bitwarden-data
               mountPath: /data
-            - name: backup
-              mountPath: /backup
       volumes:
         - name: bitwarden-data
           persistentVolumeClaim:
             claimName: bitwarden-data
-        - name: backup
-          hostPath:
-            path: /mnt/backup
       restartPolicy: Never
 

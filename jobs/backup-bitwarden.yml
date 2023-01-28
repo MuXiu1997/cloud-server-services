@@ -1,33 +1,41 @@
 apiVersion: batch/v1
-kind: Job
+kind: CronJob
 metadata:
   name: backup-bitwarden
   namespace: muxiu1997-dot-com
 spec:
-  ttlSecondsAfterFinished: 0
-  template:
+  schedule: '0 0 * * *'
+  jobTemplate:
     spec:
-      containers:
-        - name: backup-bitwarden
-          image: busybox:latest
-          command:
-            - sh
-            - -c
-            - |
-              cd /data 
-              tar cvf /backup/bitwarden-data-backup.tar * 
-              chown 1000:1000 /backup/bitwarden-data-backup.tar
-          volumeMounts:
+      ttlSecondsAfterFinished: 0
+      template:
+        spec:
+          containers:
+            - name: backup-bitwarden
+              image: muxiu1997/backup-restore:latest
+              env:
+                - name: RCLONE_CONFIG_CONTENT
+                  valueFrom:
+                    secretKeyRef:
+                      name: muxiu1997.com
+                      key: RCLONE_CONFIG_CONTENT
+                - name: BACKUP_NAME
+                  value: bitwarden
+                - name: REMOTE_BACKUP_DIR
+                  value: dropbox:/muxiu1997.com/backup/bitwarden
+                - name: GLOB_TO_BE_BACKED_UP
+                  value: /data/**
+                - name: MAX_BACKUPS
+                  value: '30'
+                - name: TZ
+                  value: Asia/Shanghai
+              args:
+                - backup
+              volumeMounts:
+                - name: bitwarden-data
+                  mountPath: /data
+          volumes:
             - name: bitwarden-data
-              mountPath: /data
-            - name: backup
-              mountPath: /backup
-      volumes:
-        - name: bitwarden-data
-          persistentVolumeClaim:
-            claimName: bitwarden-data
-        - name: backup
-          hostPath:
-            path: /mnt/backup
-      restartPolicy: Never
-
+              persistentVolumeClaim:
+                claimName: bitwarden-data
+          restartPolicy: Never
