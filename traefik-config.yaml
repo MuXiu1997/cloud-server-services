@@ -29,7 +29,7 @@ spec:
       - --certificatesresolvers.ali.acme.storage=/data/acme.json
       - --certificatesresolvers.ali.acme.dnschallenge.provider=alidns
       - --experimental.plugins.github-oauth.modulename=github.com/MuXiu1997/traefik-github-oauth-plugin
-      - --experimental.plugins.github-oauth.version=v0.2.1
+      - --experimental.plugins.github-oauth.version=v0.2.2
     env:
       - name: ALICLOUD_ACCESS_KEY
         valueFrom:
