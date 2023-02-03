@@ -1,0 +1,28 @@
+{{- $fullName := include "bitwarden.fullname" . -}}
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ template "bitwarden.namespace" . }}
+  labels:
+    {{- include "bitwarden.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{- with .Values.traefik.entryPoints }}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+  routes:
+    {{- if .Values.traefik.defaultRoute.enabled }}
+    - kind: Rule
+      match: {{ .Values.traefik.defaultRoute.match }}
+      services:
+        - kind: Service
+          name: {{ $fullName }}
+          port: {{ .Values.service.port }}
+      {{- if .Values.traefik.defaultRoute.additionalProperties }}
+      {{- toYaml .Values.traefik.defaultRoute.additionalProperties | nindent 10 }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.traefik.additionalRoutes }}
+    {{- toYaml .Values.traefik.additionalRoutes | nindent 4 }}
+    {{- end }}

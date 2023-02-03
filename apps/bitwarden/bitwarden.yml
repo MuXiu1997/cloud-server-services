@@ -1,116 +1,55 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: bitwarden-data
-  namespace: muxiu1997-dot-com
-  labels:
-    kind: pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-path
-  resources:
-    requests:
-      storage: 2Gi
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
 metadata:
   name: bitwarden
   namespace: muxiu1997-dot-com
-  labels:
-      kind: ing
 spec:
-  entryPoints:
-    - web
-    - websecure
-  routes:
-    - kind: Rule
-      match: Host(`bw.muxiu1997.com`)
-      services:
-        - kind: Service
-          name: bitwarden
-          port: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: bitwarden
-  namespace: muxiu1997-dot-com
-  labels:
-      kind: svc
-spec:
-  ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
-  selector:
-    app: bitwarden
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: bitwarden
-  namespace: muxiu1997-dot-com
-  labels:
-      kind: deploy
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: bitwarden
-  template:
-    metadata:
-      labels:
-        app: bitwarden
-    spec:
-      containers:
-        - name: bitwarden
-          image: vaultwarden/server:1.25.2-alpine
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 80
-          env:
-            - name: DOMAIN
-              value: https://bw.muxiu1997.com
-            - name: SMTP_HOST
-              value: smtp.qq.com
-            - name: SMTP_FROM
-              valueFrom:
-                secretKeyRef:
-                  name: muxiu1997.com
-                  key: BITWARDEN_SMTP_USERNAME
-            - name: SMTP_FROM_NAME
-              value: bitwarden@bw.muxiu1997.com
-            - name: SMTP_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: muxiu1997.com
-                  key: BITWARDEN_SMTP_USERNAME
-            - name: SMTP_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: muxiu1997.com
-                  key: BITWARDEN_SMTP_PASSWORD
-            - name: SMTP_PORT
-              value: "465"
-            - name: SMTP_SSL
-              value: "true"
-            - name: SMTP_EXPLICIT_TLS
-              value: "true"
-            - name: SMTP_TIMEOUT
-              value: "15"
-            - name: ADMIN_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: muxiu1997.com
-                  key: BITWARDEN_ADMIN_TOKEN
-            - name: TZ
-              value: Asia/Shanghai
-          volumeMounts:
-            - name: bitwarden-data
-              mountPath: /data
-      volumes:
-        - name: bitwarden-data
-          persistentVolumeClaim:
-            claimName: bitwarden-data
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/bitwarden-0.1.0.tgz
+  valuesContent: |-
+    namespaceOverride: muxiu1997-dot-com
+    nameOverride: bitwarden
+    env:
+      - name: DOMAIN
+        value: https://bw.muxiu1997.com
+      - name: SMTP_HOST
+        value: smtp.qq.com
+      - name: SMTP_FROM
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: BITWARDEN_SMTP_USERNAME
+      - name: SMTP_FROM_NAME
+        value: bitwarden@bw.muxiu1997.com
+      - name: SMTP_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: BITWARDEN_SMTP_USERNAME
+      - name: SMTP_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: BITWARDEN_SMTP_PASSWORD
+      - name: SMTP_PORT
+        value: "465"
+      - name: SMTP_SSL
+        value: "true"
+      - name: SMTP_EXPLICIT_TLS
+        value: "true"
+      - name: SMTP_TIMEOUT
+        value: "15"
+      - name: ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: BITWARDEN_ADMIN_TOKEN
+      - name: TZ
+        value: Asia/Shanghai
+    persistence:
+      storageClass: local-path
+    traefik:
+      entryPoints:
+        - web
+        - websecure
+      defaultRoute:
+        match: Host(`bw.muxiu1997.com`)
