@@ -32,10 +32,10 @@ spec:
               args:
                 - backup
               volumeMounts:
-                - name: bitwarden-data
+                - name: bitwarden
                   mountPath: /data
           volumes:
-            - name: bitwarden-data
+            - name: bitwarden
               persistentVolumeClaim:
-                claimName: bitwarden-data
+                claimName: bitwarden
           restartPolicy: Never
