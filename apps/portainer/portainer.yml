@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: portainer
+
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: portainer
+  namespace: portainer
+spec:
+  repo: https://portainer.github.io/k8s
+  chart: portainer
+  valuesContent: |-
+    createNamespace: false
+    image:
+      pullPolicy: IfNotPresent
+    persistence:
+      storageClass: local-path
+      size: 1Gi
+      annotations:
+        helm.sh/resource-policy: keep
+    service:
+      type: ClusterIP
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portainer
+  namespace: portainer
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`portainer.muxiu1997.com`)
+      services:
+        - kind: Service
+          name: portainer
+          port: 9000
