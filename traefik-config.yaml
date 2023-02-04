@@ -29,7 +29,7 @@ spec:
       - --certificatesresolvers.cloudflare.acme.storage=/data/acme.json
       - --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
       - --experimental.plugins.github-oauth.modulename=github.com/MuXiu1997/traefik-github-oauth-plugin
-      - --experimental.plugins.github-oauth.version=v0.2.2
+      - --experimental.plugins.github-oauth.version=v0.3.0
     env:
       - name: CF_DNS_API_TOKEN
         valueFrom:

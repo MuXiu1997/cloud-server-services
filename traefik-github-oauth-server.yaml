@@ -52,7 +52,7 @@ spec:
     spec:
       containers:
         - name: traefik-github-oauth-server
-          image: muxiu1997/traefik-github-oauth-server:v0.2.2
+          image: muxiu1997/traefik-github-oauth-server:v0.3.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
