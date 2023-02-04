@@ -17,7 +17,7 @@ spec:
       websecure:
         tls:
           enabled: true
-          certResolver: ali
+          certResolver: cloudflare
           domains:
             - main: muxiu1997.com
               sans:
@@ -25,24 +25,17 @@ spec:
       web:
         redirectTo: websecure
     additionalArguments:
-      - --certificatesresolvers.ali.acme.email=muxiu1997@gmail.com
-      - --certificatesresolvers.ali.acme.storage=/data/acme.json
-      - --certificatesresolvers.ali.acme.dnschallenge.provider=alidns
+      - --certificatesresolvers.cloudflare.acme.email=muxiu1997@gmail.com
+      - --certificatesresolvers.cloudflare.acme.storage=/data/acme.json
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
       - --experimental.plugins.github-oauth.modulename=github.com/MuXiu1997/traefik-github-oauth-plugin
       - --experimental.plugins.github-oauth.version=v0.2.2
     env:
-      - name: ALICLOUD_ACCESS_KEY
+      - name: CF_DNS_API_TOKEN
         valueFrom:
           secretKeyRef:
             name: traefik-secret
-            key: ALICLOUD_ACCESS_KEY
-      - name: ALICLOUD_SECRET_KEY
-        valueFrom:
-          secretKeyRef:
-            name: traefik-secret
-            key: ALICLOUD_SECRET_KEY
-      - name: ALICLOUD_REGION_ID
-        value: cn-beijing
+            key: CF_DNS_API_TOKEN
       - name: TZ
         value: Asia/Shanghai
     persistence:
