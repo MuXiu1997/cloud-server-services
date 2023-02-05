@@ -9,7 +9,7 @@ metadata:
 spec:
   entryPoints:
     {{- with .Values.traefik.entryPoints }}
-    {{ toYaml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
   routes:
     {{- if .Values.traefik.defaultRoute.enabled }}
@@ -19,10 +19,13 @@ spec:
         - kind: Service
           name: {{ $fullName }}
           port: {{ .Values.service.port }}
-      {{- if .Values.traefik.defaultRoute.additionalProperties }}
-      {{- toYaml .Values.traefik.defaultRoute.additionalProperties | nindent 10 }}
+      {{- with .Values.traefik.defaultRoute.additionalProperties }}
+      {{- toYaml . | nindent 10 }}
       {{- end }}
     {{- end }}
-    {{- if .Values.traefik.additionalRoutes }}
-    {{- toYaml .Values.traefik.additionalRoutes | nindent 4 }}
+    {{- with .Values.traefik.additionalRoutes }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
+  {{- with .Values.traefik.additionalProperties }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}

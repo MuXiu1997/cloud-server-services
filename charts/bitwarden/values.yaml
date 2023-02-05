@@ -62,3 +62,4 @@ traefik:
     match: Host(`example.com`)
     additionalProperties: { }
   additionalRoutes: [ ]
+  additionalProperties: { }
