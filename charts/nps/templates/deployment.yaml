@@ -1,0 +1,158 @@
+{{- define "portEnv" }}
+  {{- $serviceName := index . 0 }}
+  {{- $confName := index . 1 }}
+  {{- $top := index . 2 }}
+  {{- $service := $serviceName | get $top.Values.services | toYaml | fromYaml }}
+  {{- $envKeysMap := dict }}
+  {{- range $entry := $top.Values.env }}
+    {{- $_ := set $envKeysMap $entry.name nil }}
+  {{- end }}
+  {{- if $service.enabled }}
+    {{- $envKey := $confName | upper | printf "NPS_%s" }}
+    {{- $commentEnvKey := $envKey | printf "COMMENT_%s" }}
+    {{- if not (hasKey $envKeysMap $envKey) }}
+      {{- dict "name" $envKey "value" ($service.targetPort | print) | list | toYaml | nindent 12 }}
+    {{- end }}
+    {{- if not (hasKey $envKeysMap $commentEnvKey) }}
+      {{- dict "name" $commentEnvKey "value" "" | list | toYaml | nindent 12 }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nps.fullname" . }}
+  namespace: {{ template "nps.namespace" . }}
+  labels:
+    {{- include "nps.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "nps.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "nps.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.ensureConfFiles }}
+      initContainers:
+        - name: ensure-conf-files
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              for file in {{ .Values.persistence.path }}/clients.json {{ .Values.persistence.path }}/hosts.json {{ .Values.persistence.path }}/tasks.json; do
+                if [ ! -f "$file" ]; then
+                  touch "$file"
+                fi
+              done
+          volumeMounts:
+            - name: {{ .Values.persistence.name }}
+              mountPath: {{ .Values.persistence.path }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            {{- if .Values.services.web.enabled }}
+            - name: web
+              containerPort: {{ .Values.services.web.targetPort }}
+              protocol: {{ .Values.services.web.protocol }}
+            {{- end }}
+            {{- if .Values.services.httpTunnel.enabled }}
+            - name: http-tunnel
+              containerPort: {{ .Values.services.httpTunnel.targetPort }}
+              protocol: {{ .Values.services.httpTunnel.protocol }}
+            {{- end }}
+            {{- if .Values.services.httpsTunnel.enabled }}
+            - name: https-tunnel
+              containerPort: {{ .Values.services.httpsTunnel.targetPort }}
+              protocol: {{ .Values.services.httpsTunnel.protocol }}
+            {{- end }}
+            {{- if .Values.services.bridge.enabled }}
+            - name: bridge
+              containerPort: {{ .Values.services.bridge.targetPort }}
+              protocol: {{ .Values.services.bridge.protocol }}
+            {{- end }}
+            {{- if .Values.services.p2p.enabled }}
+            - name: p2p
+              containerPort: {{ .Values.services.p2p.targetPort }}
+              protocol: {{ .Values.services.p2p.protocol }}
+            {{- end }}
+            {{- if .Values.services.pprof.enabled }}
+            - name: pprof
+              containerPort: {{ .Values.services.pprof.targetPort }}
+              protocol: {{ .Values.services.pprof.protocol }}
+            {{- end }}
+            {{- if .Values.portTunnels.enabled }}
+              {{- $tunnelsPorts := include "nps.tunnelsPortsJson" . | fromJson }}
+              {{- range $port := $tunnelsPorts.tcp  }}
+            - name: {{ printf "tcp-%s" $port }}
+              containerPort: {{ $port }}
+              protocol: TCP
+              {{- end }}
+              {{- range $port := $tunnelsPorts.udp }}
+            - name: {{ printf "udp-%s" $port }}
+              containerPort: {{ $port }}
+              protocol: UDP
+              {{- end }}
+          {{- end }}
+          {{- if .Values.services.httpTunnel.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.services.web.targetPort }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.services.web.targetPort }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+          {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end}}
+          {{- template "portEnv" (list "web" "web_port" .) }}
+          {{- template "portEnv" (list "bridge" "bridge_port" .) }}
+          {{- template "portEnv" (list "httpTunnel" "http_proxy_port" .) }}
+          {{- template "portEnv" (list "httpsTunnel" "https_proxy_port" .) }}
+          {{- template "portEnv" (list "p2p" "p2p_port" .) }}
+          {{- template "portEnv" (list "pprof" "pprof_port" .) }}
+          volumeMounts:
+            - name: {{ .Values.persistence.name }}
+              mountPath: {{ .Values.persistence.path }}
+      volumes:
+        - name: {{ .Values.persistence.name }}
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ default (include "nps.fullname" .) .Values.persistence.existingClaim }}
+          {{- else }}
+          emptyDir: { }
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

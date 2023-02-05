@@ -1,309 +1,92 @@
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nps-config
-  namespace: muxiu1997-dot-com
-data:
-  nps.conf: |
-    appname=nps
-    #Boot mode(dev|pro)
-    runmode=pro
-    
-    #HTTP(S) proxy port, no startup if empty
-    http_proxy_ip=0.0.0.0
-    http_proxy_port=80
-    #https_proxy_port=443
-    https_just_proxy=true
-    #default https certificate setting
-    ##https_default_cert_file=conf/server.pem
-    ##https_default_key_file=conf/server.key
-    
-    ##bridge
-    bridge_type=tcp
-    bridge_port=8024
-    bridge_ip=0.0.0.0
-    
-    # Public password, which clients can use to connect to the server
-    # After the connection, the server will be able to open relevant ports and parse related domain names according to its own configuration file.
-    public_vkey={{ NPS_PUBLIC_VKEY }}
-    
-    #Traffic data persistence interval(minute)
-    #Ignorance means no persistence
-    # flow_store_interval=1
-    
-    # log level LevelEmergency->0  LevelAlert->1 LevelCritical->2 LevelError->3 LevelWarning->4 LevelNotice->5 LevelInformational->6 LevelDebug->7
-    log_level=6
-    #log_path=nps.log
-    
-    #Whether to restrict IP access, true or false or ignore
-    # ip_limit=true
-    
-    #p2p
-    #p2p_ip=127.0.0.1
-    #p2p_port=6000
-    
-    #web
-    web_host=nps.muxiu1997.com
-    web_username={{ NPS_WEB_USERNAME }}
-    web_password={{ NPS_WEB_PASSWORD }}
-    web_port=8080
-    web_ip=0.0.0.0
-    web_base_url=
-    web_open_ssl=false
-    ##web_cert_file=conf/server.pem
-    ##web_key_file=conf/server.key
-    # if web under proxy use sub path. like http://host/nps need this.
-    # web_base_url=/nps
-    
-    #Web API unauthenticated IP address(the len of auth_crypt_key must be 16)
-    auth_key=auth_key
-    auth_crypt_key=aiEVA8gsicnzzyKw
-    
-    allow_ports=30100-30101
-    
-    #Web management multi-user login
-    allow_user_login=false
-    allow_user_register=false
-    allow_user_change_username=false
-    
-    
-    #extension
-    allow_flow_limit=false
-    allow_rate_limit=false
-    allow_tunnel_num_limit=false
-    allow_local_proxy=false
-    allow_connection_num_limit=false
-    allow_multi_ip=false
-    system_info_display=false
-    
-    #cache
-    http_cache=false
-    http_cache_length=100
-    
-    #get origin ip
-    http_add_origin_header=true
-    
-    #pprof debug options
-    #pprof_ip=0.0.0.0
-    #pprof_port=9999
-    
-    #client disconnect timeout
-    disconnect_timeout=60
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nps-data
-  namespace: muxiu1997-dot-com
-  labels:
-    kind: pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-path
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
 metadata:
   name: nps
   namespace: muxiu1997-dot-com
-  labels:
-    kind: ing
 spec:
-  routes:
-    - kind: Rule
-      match: Host(`nps.muxiu1997.com`)
-      services:
-        - kind: Service
-          name: nps
-          port: 8080
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: nps-http
-  namespace: muxiu1997-dot-com
-  labels:
-    kind: ing
-spec:
-  routes:
-    - kind: Rule
-      match: HostRegexp(`{subdomain:[A-Za-z0-9_]+}.nps.muxiu1997.com`)
-      services:
-        - kind: Service
-          name: nps-http
-          port: 80
-  tls:
-    certResolver: ali
-    domains:
-      - main: nps.muxiu1997.com
-        sans:
-          - "*.nps.muxiu1997.com"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nps
-  namespace: muxiu1997-dot-com
-  labels:
-    kind: svc
-spec:
-  ports:
-    - port: 8080
-      targetPort: 8080
-      protocol: TCP
-  selector:
-    app: nps
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nps-bridge
-  namespace: muxiu1997-dot-com
-  labels:
-    kind: svc
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 8024
-      targetPort: 8024
-      protocol: TCP
-  selector:
-    app: nps
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nps-http
-  namespace: muxiu1997-dot-com
-  labels:
-    kind: svc
-spec:
-  ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
-  selector:
-    app: nps
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nps-tcp-udp
-  namespace: muxiu1997-dot-com
-  labels:
-    kind: svc
-spec:
-  type: LoadBalancer
-  ports:
-    - name: tcp-30100
-      port: 30100
-      targetPort: 30100
-      protocol: TCP
-    - name: udp-30100
-      port: 30100
-      targetPort: 30100
-      protocol: UDP
-    - name: tcp-30101
-      port: 30101
-      targetPort: 30101
-      protocol: TCP
-    - name: udp-30101
-      port: 30101
-      targetPort: 30101
-      protocol: UDP
-  selector:
-    app: nps
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nps
-  namespace: muxiu1997-dot-com
-  labels:
-    kind: deploy
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: nps
-  template:
-    metadata:
-      labels:
-        app: nps
-    spec:
-      initContainers:
-        - name: generate-config-file
-          image: busybox
-          env:
-            - name: NPS_PUBLIC_VKEY
-              valueFrom:
-                secretKeyRef:
-                  name: muxiu1997.com
-                  key: NPS_PUBLIC_VKEY
-            - name: NPS_WEB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: muxiu1997.com
-                  key: NPS_WEB_USERNAME
-            - name: NPS_WEB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: muxiu1997.com
-                  key: NPS_WEB_PASSWORD
-          command:
-            - sh
-            - -c
-            - >
-              cat /conf-template/nps.conf
-              | sed "s/{{ NPS_PUBLIC_VKEY }}/${NPS_PUBLIC_VKEY}/g"
-              | sed "s/{{ NPS_WEB_USERNAME }}/${NPS_WEB_USERNAME}/g"
-              | sed "s/{{ NPS_WEB_PASSWORD }}/${NPS_WEB_PASSWORD}/g"
-              > /conf/nps.conf
-          volumeMounts:
-            - name: nps-data
-              mountPath: /conf
-            - name: nps-config
-              mountPath: /conf-template
-        - name: ensure-files
-          image: busybox
-          command:
-            - sh
-            - -c
-            - |
-              for file in /conf/clients.json /conf/hosts.json /conf/tasks.json; do
-                if [ ! -f "$file" ]; then
-                  touch "$file"
-                fi
-              done
-          volumeMounts:
-            - name: nps-data
-              mountPath: /conf
-      containers:
-        - name: nps
-          image: ffdfgdfg/nps:v0.26.10
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-              protocol: TCP
-            - containerPort: 8024
-              protocol: TCP
-            - containerPort: 80
-              protocol: TCP 
-          env:
-            - name: TZ
-              value: Asia/Shanghai
-          volumeMounts:
-            - name: nps-data
-              mountPath: /conf
-      volumes:
-        - name: nps-data
-          persistentVolumeClaim:
-            claimName: nps-data
-        - name: nps-config
-          configMap:
-            name: nps-config
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/nps-0.1.0.tgz
+  valuesContent: |-
+    namespaceOverride: muxiu1997-dot-com
+    nameOverride: nps
+    env:
+      - name: NPS_RUNMODE
+        value: pro
+      - name: COMMENT_NPS_HTTPS_PROXY_PORT
+        value: 'true'
+      - name: COMMENT_NPS_HTTPS_DEFAULT_CERT_FILE
+        value: 'true'
+      - name: COMMENT_NPS_HTTPS_DEFAULT_KEY_FILE
+        value: 'true'
+      - name: NPS_PUBLIC_VKEY
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: NPS_PUBLIC_VKEY
+      - name: NPS_WEB_HOST
+        value: nps.muxiu1997.com
+      - name: NPS_WEB_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: NPS_WEB_USERNAME
+      - name: NPS_WEB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: NPS_WEB_PASSWORD
+      - name: COMMENT_NPS_WEB_CERT_FILE
+        value: 'true'
+      - name: COMMENT_NPS_WEB_KEY_FILE
+        value: 'true'
+      - name: COMMENT_NPS_AUTH_KEY
+        value: ''
+      - name: NPS_AUTH_KEY
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: NPS_AUTH_KEY
+      - name: NPS_AUTH_CRYPT_KEY
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: NPS_AUTH_CRYPT_KEY
+      - name: COMMENT_NPS_ALLOW_PORTS
+        value: ''
+      - name: NPS_ALLOW_PORTS
+        value: '14100-14199'
+      - name: TZ
+        value: Asia/Shanghai
+    services:
+      bridge:
+        type: LoadBalancer
+    portTunnels:
+      type: LoadBalancer
+      ports:
+        - start: 14100
+          end: 14199
+          protocol: TCP
+        - start: 14100
+          end: 14199
+          protocol: UDP
+    persistence:
+      storageClass: local-path
+    traefikWeb:
+      entryPoints:
+        - web
+        - websecure
+      defaultRoute:
+        match: Host(`nps.muxiu1997.com`)
+    traefikHttpTunnel:
+      entryPoints:
+        - web
+        - websecure
+      defaultRoute:
+        match: HostRegexp(`{subdomain:[A-Za-z0-9_]+}.nps.muxiu1997.com`)
+      additionalProperties:
+        tls:
+          certResolver: cloudflare
+          domains:
+            - main: nps.muxiu1997.com
+              sans:
+                - "*.nps.muxiu1997.com" 
+                

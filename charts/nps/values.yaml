@@ -1,0 +1,118 @@
+# Default values for bitwarden.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+  
+namespaceOverride: ''
+
+replicaCount: 1
+
+image:
+  repository: muxiu1997/nps-docker-with-env
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ''
+
+imagePullSecrets: [ ]
+nameOverride: ''
+fullnameOverride: ''
+
+podAnnotations: { }
+
+resources: { }
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }
+
+env: { }
+  
+ensureConfFiles: true
+
+persistence:
+  enabled: true
+  name: conf
+  path: /conf
+  accessMode: ReadWriteOnce
+  storageClass: '' # empty string means use the default storage class
+  size: 128Mi
+  annotations: { }
+  existingClaim: ''
+
+services:
+  web:
+    enabled: true
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  bridge:
+    enabled: true
+    type: NodePort
+    port: 8024
+    targetPort: 8024
+    protocol: TCP
+  httpTunnel:
+    enabled: true
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  httpsTunnel:
+    enabled: false
+    type: ClusterIP
+    port: 443
+    targetPort: 443
+    protocol: TCP
+  p2p:
+    enabled: false
+    type: NodePort
+    port: 6000
+    targetPort: 6000
+    protocol: UDP
+  pprof:
+    enabled: false
+    type: NodePort
+    port: 9999
+    targetPort: 9999
+    protocol: TCP
+  
+portTunnels:
+  enabled: true
+  type: NodePort
+  ports: 
+    # - start: 30000
+    #   end: 30010
+    #   protocol: TCP
+    # - start: 30200
+    #   end: 30210
+    #   protocol: UDP
+
+traefikWeb:
+  entryPoints: [ ]
+  defaultRoute:
+    enabled: true
+    match: Host(`example.com`)
+    additionalProperties: { }
+  additionalRoutes: [ ]
+  additionalProperties: { }
+
+traefikHttpTunnel:
+  entryPoints: [ ]
+  defaultRoute:
+    enabled: true
+    match: Host(`example.com`)
+    additionalProperties: { }
+  additionalRoutes: [ ]
+  additionalProperties: { }

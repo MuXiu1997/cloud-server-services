@@ -1,0 +1,31 @@
+{{- $fullName := include "nps.fullname" . | printf "%s-web"  | trunc 63 | trimSuffix "-"  -}}
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ template "nps.namespace" . }}
+  labels:
+    {{- include "nps.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    {{- with .Values.traefikWeb.entryPoints }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  routes:
+    {{- if .Values.traefikWeb.defaultRoute.enabled }}
+    - kind: Rule
+      match: {{ .Values.traefikWeb.defaultRoute.match }}
+      services:
+        - kind: Service
+          name: {{ $fullName }}
+          port: {{ .Values.services.web.port }}
+      {{- with .Values.traefikWeb.defaultRoute.additionalProperties }}
+      {{- toYaml . | nindent 10 }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.traefikWeb.additionalRoutes }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.traefikWeb.additionalProperties }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}

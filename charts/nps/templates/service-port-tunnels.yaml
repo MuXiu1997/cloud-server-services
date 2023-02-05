@@ -1,0 +1,27 @@
+{{- if and .Values.portTunnels.enabled (.Values.portTunnels.ports) }}
+  {{- $tunnelsPorts := include "nps.tunnelsPortsJson" . | fromJson }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nps.fullname" . | printf "%s-port-tunnels" | trunc 63 | trimSuffix "-" }}
+  namespace: {{ template "nps.namespace" . }}
+  labels:
+    {{- include "nps.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.portTunnels.type }}
+  ports:
+    {{- range $port := $tunnelsPorts.tcp  }}
+    - name: {{ printf "tcp-%s" $port }}
+      port: {{ $port }}
+      targetPort: {{ $port }}
+      protocol: TCP
+    {{- end }}
+    {{- range $port := $tunnelsPorts.udp }}
+    - name: {{ printf "udp-%s" $port }}
+      port: {{ $port }}
+      targetPort: {{ $port }}
+      protocol: UDP
+    {{- end }}
+  selector:
+    {{- include "nps.selectorLabels" . | nindent 4 }}
+{{- end }}
