@@ -1,0 +1,35 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: dufs
+  namespace: muxiu1997-dot-com
+spec:
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/dufs-0.1.0.tgz
+  valuesContent: |-
+    namespaceOverride: muxiu1997-dot-com
+    nameOverride: dufs
+    env:
+      - name: DUFS_ADMIN_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: muxiu1997.com
+            key: DUFS_ADMIN_PASSWORD
+      - name: DUFS_ROOT
+        value: /data
+      - name: DUFS_AUTH
+        value: /@admin:$(DUFS_ADMIN_PASSWORD)@*
+      - name: DUFS_ALLOW_ALL
+        value: "true"
+      - name: DUFS_PORT
+        value: "5000"
+      - name: TZ
+        value: Asia/Shanghai
+    persistence:
+      storageClass: local-path
+    traefik:
+      entryPoints:
+        - web
+        - websecure
+      defaultRoute:
+        match: Host(`f.muxiu1997.com`)
+        
