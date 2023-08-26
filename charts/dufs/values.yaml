@@ -37,7 +37,7 @@ tolerations: [ ]
 affinity: { }
 
 env: { }
-  # - name: "DUFS_ROOT"
+  # - name: "DUFS_SERVE_PATH"
   #   value: "/data"
 
 persistence:
