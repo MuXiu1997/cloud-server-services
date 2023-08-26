@@ -14,10 +14,10 @@ spec:
           secretKeyRef:
             name: muxiu1997.com
             key: DUFS_ADMIN_PASSWORD
-      - name: DUFS_ROOT
+      - name: DUFS_SERVE_PATH
         value: /data
       - name: DUFS_AUTH
-        value: /@admin:$(DUFS_ADMIN_PASSWORD)@*
+        value: admin:$(DUFS_ADMIN_PASSWORD)@/:rw|@/
       - name: DUFS_ALLOW_ALL
         value: "true"
       - name: DUFS_PORT
