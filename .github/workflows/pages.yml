@@ -36,14 +36,18 @@ jobs:
         uses: azure/setup-helm@v3
         with:
           version: 'v3.11.0'
-      - name: Helm package
+      - name: Helm Package
         run: helm package ./*
         working-directory: ./charts
-      - name: Upload artifact
+      - name: Generate Index
+        uses: jayanta525/github-pages-directory-listing@v3.0.0
+        with:
+          FOLDER: '.'
+      - name: Upload Artifact
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
           path: '.'
-      - name: Deploy to GitHub Pages
+      - name: Deploy To GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
