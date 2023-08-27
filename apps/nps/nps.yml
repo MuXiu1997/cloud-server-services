@@ -4,7 +4,7 @@ metadata:
   name: nps
   namespace: muxiu1997-dot-com
 spec:
-  chart: https://muxiu1997.github.io/cloud-server-services/charts/nps-0.1.0.tgz
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/nps-0.1.0-20230827.tgz
   valuesContent: |-
     namespaceOverride: muxiu1997-dot-com
     nameOverride: nps
