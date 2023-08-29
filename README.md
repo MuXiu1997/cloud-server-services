@@ -4,6 +4,10 @@
 
 - [`Traefik`](https://doc.traefik.io/traefik/)
 - [`Bitwarden`](https://github.com/dani-garcia/vaultwarden)
-- [`Portainer`](https://docs.portainer.io/v/ce-2.11/)
+- [`Dufs`](https://github.com/sigoden/dufs)
+- [`Memos`](https://github.com/usememos/memos)
 - [`Nps`](https://ehang-io.github.io/nps/#/?id=nps)
-- [`Sftpgo`](https://github.com/drakkan/sftpgo)
+- [`Portainer`](https://docs.portainer.io/v/ce-2.11/)
+
+---
+directory listing: https://muxiu1997.github.io/cloud-server-services/
