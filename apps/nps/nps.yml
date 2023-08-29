@@ -5,6 +5,7 @@ metadata:
   namespace: muxiu1997-dot-com
 spec:
   chart: https://muxiu1997.github.io/cloud-server-services/charts/nps-0.1.0-20230827.tgz
+  # language=yaml
   valuesContent: |-
     namespaceOverride: muxiu1997-dot-com
     nameOverride: nps
@@ -89,4 +90,3 @@ spec:
             - main: nps.muxiu1997.com
               sans:
                 - "*.nps.muxiu1997.com" 
-                
