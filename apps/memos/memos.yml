@@ -1,0 +1,24 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: memos
+  namespace: muxiu1997-dot-com
+spec:
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/memos-0.1.0-20230829.tgz
+  # language=yaml
+  valuesContent: |-
+    namespaceOverride: muxiu1997-dot-com
+    nameOverride: memos
+    env:
+      - name: MEMOS_PORT
+        value: "5230"
+      - name: TZ
+        value: Asia/Shanghai
+    persistence:
+      storageClass: local-path
+    traefik:
+      entryPoints:
+        - web
+        - websecure
+      defaultRoute:
+        match: Host(`memos.muxiu1997.com`)
