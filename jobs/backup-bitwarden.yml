@@ -7,7 +7,7 @@ spec:
   schedule: '0 0 * * *'
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 0
+      ttlSecondsAfterFinished: 2592000 # keep the job for 30 days (60 * 60 * 24 * 30)
       template:
         spec:
           containers:
