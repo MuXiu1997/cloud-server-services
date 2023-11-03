@@ -12,6 +12,7 @@ metadata:
 spec:
   repo: https://portainer.github.io/k8s
   chart: portainer
+  # language=yaml
   valuesContent: |-
     createNamespace: false
     image:

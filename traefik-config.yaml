@@ -5,6 +5,7 @@ metadata:
   name: traefik
   namespace: kube-system
 spec:
+  # language=yaml
   valuesContent: |-
     image:
       name: traefik
