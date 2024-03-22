@@ -4,16 +4,22 @@ metadata:
   name: bitwarden
   namespace: muxiu1997-dot-com
 spec:
-  chart: https://muxiu1997.github.io/cloud-server-services/charts/bitwarden-0.1.0-20230827.tgz
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/simple-web-app-0.1.0.tgz
   # language=yaml
   valuesContent: |-
+    name: bitwarden
+    version: 1.30.5
     namespaceOverride: muxiu1997-dot-com
-    nameOverride: bitwarden
+    image:
+      repository: vaultwarden/server
+      tag: 1.30.5-alpine
+    livenessProbePath: /alive
+    readinessProbePath: /alive
     env:
       - name: DOMAIN
         value: https://bw.muxiu1997.com
       - name: SMTP_HOST
-        value: smtp.qq.com
+        value: smtp.163.com
       - name: SMTP_FROM
         valueFrom:
           secretKeyRef:
@@ -48,6 +54,7 @@ spec:
         value: Asia/Shanghai
     persistence:
       storageClass: local-path
+      size: 128Mi
     traefik:
       entryPoints:
         - web
