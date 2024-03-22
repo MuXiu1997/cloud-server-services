@@ -4,11 +4,16 @@ metadata:
   name: dufs
   namespace: muxiu1997-dot-com
 spec:
-  chart: https://muxiu1997.github.io/cloud-server-services/charts/dufs-0.1.0-20230827.tgz
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/simple-web-app-0.1.0.tgz
   # language=yaml
   valuesContent: |-
+    name: dufs
+    version: v0.40.0
     namespaceOverride: muxiu1997-dot-com
-    nameOverride: dufs
+    image:
+      repository: sigoden/dufs
+    livenessProbePath: /
+    readinessProbePath: /
     env:
       - name: DUFS_ADMIN_PASSWORD
         valueFrom:
@@ -18,11 +23,11 @@ spec:
       - name: DUFS_SERVE_PATH
         value: /data
       - name: DUFS_AUTH
-        value: admin:$(DUFS_ADMIN_PASSWORD)@/:rw|@/
+        value: admin:$(DUFS_ADMIN_PASSWORD)@/:rw,/share:rw|@/share
       - name: DUFS_ALLOW_ALL
         value: "true"
       - name: DUFS_PORT
-        value: "5000"
+        value: "80"
       - name: TZ
         value: Asia/Shanghai
     persistence:
