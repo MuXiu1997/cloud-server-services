@@ -1,0 +1,74 @@
+# Default values for simple-web-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# App name
+name: 'EDIT-ME'
+version: 'EDIT-ME'
+fullnameOverride: ''
+namespaceOverride: ''
+
+replicaCount: 1
+
+image:
+  repository: 'EDIT-ME'
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ''
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: [ ]
+
+podAnnotations: { }
+
+# container
+containerPort: 80
+livenessProbePath: ''
+readinessProbePath: ''
+
+resources: { }
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+env: { }
+# - name: "bark_SERVE_PATH"
+#   value: "/data"
+  
+command: { }
+args: { }
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }
+
+persistence:
+  enabled: true
+  name: data
+  path: /data
+  accessMode: ReadWriteOnce
+  storageClass: '' # empty string means use the default storage class
+  size: 10Gi
+  annotations: { }
+  existingClaim: ''
+
+service:
+  type: ClusterIP
+  port: 80
+
+traefik:
+  entryPoints: [ ]
+  defaultRoute:
+    enabled: true
+    match: Host(`example.com`)
+    additionalProperties: { }
+  additionalRoutes: [ ]
+  additionalProperties: { }
