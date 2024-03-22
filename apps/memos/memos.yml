@@ -4,18 +4,23 @@ metadata:
   name: memos
   namespace: muxiu1997-dot-com
 spec:
-  chart: https://muxiu1997.github.io/cloud-server-services/charts/memos-0.1.0-20230829.tgz
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/simple-web-app-0.1.0.tgz
   # language=yaml
   valuesContent: |-
+    name: memos
+    version: 0.20.1
     namespaceOverride: muxiu1997-dot-com
-    nameOverride: memos
+    image:
+      repository: ghcr.io/usememos/memos
     env:
       - name: MEMOS_PORT
-        value: "5230"
+        value: "80"
       - name: TZ
         value: Asia/Shanghai
     persistence:
       storageClass: local-path
+      path: /var/opt/memos
+      size: 128Mi
     traefik:
       entryPoints:
         - web
