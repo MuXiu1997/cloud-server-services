@@ -4,11 +4,22 @@ metadata:
   name: bark
   namespace: muxiu1997-dot-com
 spec:
-  chart: https://muxiu1997.github.io/cloud-server-services/charts/bark-0.1.0-20240322.tgz
+  chart: https://muxiu1997.github.io/cloud-server-services/charts/simple-web-app-0.1.0.tgz
   # language=yaml
   valuesContent: |-
+    name: bark
+    version: v2.1.5
     namespaceOverride: muxiu1997-dot-com
-    nameOverride: bark
+    image:
+      repository: finab/bark-server
+    livenessProbePath: /healthz
+    readinessProbePath: /ping
+    args:
+      - bark-server
+      - --addr
+      - 0.0.0.0:80
+      - --data
+      - /data
     env:
       - name: TZ
         value: Asia/Shanghai
