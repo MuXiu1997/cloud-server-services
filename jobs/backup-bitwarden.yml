@@ -12,17 +12,26 @@ spec:
         spec:
           containers:
             - name: backup-bitwarden
-              image: muxiu1997/backup-restore:latest
+              image: muxiu1997/backup-restore:2024-04-02
               env:
-                - name: RCLONE_CONFIG_CONTENT
+                - name: BACKUP_METHOD
+                  value: webdav
+                - name: REMOTE_BACKUP_DIR
+                  value: /muxiu1997.com/bitwarden
+                - name: BACKUP_NAME
+                  value: bitwarden
+                - name: WEBDAV_URL
+                  value: http://backup-service
+                - name: WEBDAV_USERNAME
                   valueFrom:
                     secretKeyRef:
                       name: muxiu1997.com
-                      key: RCLONE_CONFIG_CONTENT
-                - name: BACKUP_NAME
-                  value: bitwarden
-                - name: REMOTE_BACKUP_DIR
-                  value: dropbox:/muxiu1997.com/backup/bitwarden
+                      key: BACKUP_WEBDAV_USERNAME
+                - name: WEBDAV_PASSWORD
+                  valueFrom:
+                      secretKeyRef:
+                        name: muxiu1997.com
+                        key: BACKUP_WEBDAV_PASSWORD
                 - name: GLOB_TO_BE_BACKED_UP
                   value: /data/**
                 - name: MAX_BACKUPS

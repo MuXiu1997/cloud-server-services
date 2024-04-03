@@ -1,3 +1,4 @@
+# TODO: migrate to muxiu1997/backup-restore:latest
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -32,4 +33,3 @@ spec:
           persistentVolumeClaim:
             claimName: bitwarden
       restartPolicy: Never
-
